@@ -3,12 +3,13 @@
 #include <WiFiManager.h>
 #include <ESP8266HTTPClient.h>
 
+
 int ledPin = 15;  // D8
 int ledPin7 = 16; // D0
 
 WiFiClient client;
 
-// Constantes para tiempos
+// Constantes para tiempo
 const int SEGUNDOS_EN_UNA_HORA = 3600;
 const int SEGUNDOS_EN_UN_DIA = 86400; // 24 * 3600
 const int DESFASE_HORARIO = 6 * SEGUNDOS_EN_UNA_HORA; // UTC-6 en segundos
