@@ -4,7 +4,7 @@
 #include <ESP8266HTTPClient.h>
 
 
-int ledPin = 15;  // D8
+int ledPin = 5;  // D1
 int ledPin7 = 16; // D0
 
 WiFiClient client;
