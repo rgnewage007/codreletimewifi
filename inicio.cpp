@@ -36,7 +36,35 @@ void sincronizarHora() {
         Serial.print(".");
     }
     
-    Serial.println("\n✅ Hora sincronizada!");
+    // ✅ MOSTRAR HORA EXACTA DE SINCRONIZACIÓN
+    unsigned long epochTime = timeClient.getEpochTime();
+    unsigned long segundosDia = epochTime % 86400UL;
+    
+    int horas = segundosDia / 3600;
+    int minutos = (segundosDia % 3600) / 60;
+    int segundos = segundosDia % 60;
+    
+    Serial.println("\n✅ HORA SINCRONIZADA!");
+    Serial.print("🕒 Fecha y hora actual: ");
+    Serial.print(horas < 10 ? "0" : "");
+    Serial.print(horas);
+    Serial.print(":");
+    Serial.print(minutos < 10 ? "0" : "");
+    Serial.print(minutos);
+    Serial.print(":");
+    Serial.print(segundos < 10 ? "0" : "");
+    Serial.println(segundos);
+    
+    // Mostrar fecha también (opcional)
+    time_t rawTime = epochTime;
+    struct tm * ti = localtime(&rawTime);
+    Serial.print("📅 Fecha: ");
+    Serial.print(ti->tm_mday);
+    Serial.print("/");
+    Serial.print(ti->tm_mon + 1);
+    Serial.print("/");
+    Serial.println(ti->tm_year + 1900);
+    
     horaSincronizada = true;
 }
 
@@ -48,7 +76,7 @@ void actualizarEstadoLuz() {
         return;
     }
     
-    // 🔥 CORREGIDO: NTPClient ya aplica el offset UTC-6
+    // Obtener hora local (NTPClient ya aplica el offset UTC-6)
     unsigned long epochTime = timeClient.getEpochTime();
     unsigned long segundosDia = epochTime % 86400UL;
     
@@ -56,7 +84,16 @@ void actualizarEstadoLuz() {
     int minutos = (segundosDia % 3600) / 60;
     int segundos = segundosDia % 60;
     
-    Serial.printf("Hora local: %02d:%02d:%02d\n", horas, minutos, segundos);
+    // 📌 MOSTRAR HORA ACTUAL EN CADA CICLO
+    Serial.print("🕒 Hora actual: ");
+    Serial.print(horas < 10 ? "0" : "");
+    Serial.print(horas);
+    Serial.print(":");
+    Serial.print(minutos < 10 ? "0" : "");
+    Serial.print(minutos);
+    Serial.print(":");
+    Serial.print(segundos < 10 ? "0" : "");
+    Serial.println(segundos);
     
     // Lógica de encendido: 6:40 PM a 6:40 AM
     bool debeEstarEncendida = 
@@ -70,11 +107,36 @@ void actualizarEstadoLuz() {
         // NodeMCU: LOW = encendido, HIGH = apagado
         digitalWrite(ledPin, estadoLuz ? LOW : HIGH);
         
+        // 📌 MOSTRAR CAMBIO DE ESTADO CON HORA
+        Serial.print("⚡ CAMBIO DE ESTADO - ");
+        Serial.print(horas < 10 ? "0" : "");
+        Serial.print(horas);
+        Serial.print(":");
+        Serial.print(minutos < 10 ? "0" : "");
+        Serial.print(minutos);
+        Serial.print(":");
+        Serial.print(segundos < 10 ? "0" : "");
+        Serial.print(segundos);
+        Serial.print(" - Pin D5 (GPIO14): ");
+        
         if (estadoLuz) {
-            Serial.println("💡 LUZ ENCENDIDA (6:40 PM - 6:40 AM)");
+            Serial.println("🔴 ENCENDIDO (LOW)");
         } else {
-            Serial.println("🌞 LUZ APAGADA (6:40 AM - 6:40 PM)");
+            Serial.println("⚫ APAGADO (HIGH)");
         }
+        
+        // 📌 MOSTRAR HORARIO COMPLETO
+        Serial.println("📅 Horario programado: 6:40 PM → ENCENDIDO | 6:40 AM → APAGADO");
+    } else {
+        // 📌 MOSTRAR ESTADO ACTUAL DEL PIN
+        Serial.print("📊 Estado actual - Pin D5: ");
+        if (estadoLuz) {
+            Serial.print("🔴 ENCENDIDO");
+        } else {
+            Serial.print("⚫ APAGADO");
+        }
+        Serial.print(" | Hora encendido: 6:40 PM - 6:40 AM");
+        Serial.println();
     }
 }
 
@@ -108,7 +170,8 @@ void setup() {
     Serial.begin(115200);
     delay(1000);
     
-    Serial.println("\n🚀 Iniciando sistema...");
+    Serial.println("\n🚀 Iniciando sistema de control de luz...");
+    Serial.println("========================================");
     
     pinMode(ledPin, OUTPUT);
     pinMode(ledPin7, OUTPUT);
@@ -143,6 +206,8 @@ void setup() {
     }
     
     Serial.println("⚡ Sistema listo!");
+    Serial.println("📌 Horario: ENCENDIDO 6:40 PM - 6:40 AM | APAGADO 6:40 AM - 6:40 PM");
+    Serial.println("========================================\n");
 }
 
 // ----------------------------------------------------
@@ -174,7 +239,8 @@ void loop() {
         
         // 💡 LED indicador de vida (D0 parpadea cada minuto)
         digitalWrite(ledPin7, !digitalRead(ledPin7));
-        Serial.println("❤️ Sistema activo...");
+        
+        Serial.println("----------------------------");
     }
     
     // Pequeño delay para no saturar
