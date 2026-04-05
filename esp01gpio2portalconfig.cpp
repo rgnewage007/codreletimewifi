@@ -1,3 +1,4 @@
+//ES CON EL PIN 0 Y LA LOGICA ESTA INVERTIDA EN EL MODULO
 #include <DNSServer.h>
 #include <ESP8266WebServer.h>
 #include <WiFiManager.h>
@@ -25,8 +26,8 @@ WiFiUDP ntpUDP;
 NTPClient timeClient(ntpUDP, "pool.ntp.org", -21600, 60000); // UTC-6 (Costa Rica)
 
 // Pines ESP-01
-int ledPin = 2;      // GPIO2 - Luz principal
-int ledPin7 = 1;     // GPIO1 (TX) - LED indicador
+int ledPin = 0;      // GPIO0 - Luz principal
+int ledPin7 = 2;     // GPIO2 - LED indicador
 
 bool estadoLuz = false;
 bool horaSincronizada = false;
@@ -231,7 +232,7 @@ void actualizarEstadoLuz() {
   
   if (debeEstarEncendida != estadoLuz) {
     estadoLuz = debeEstarEncendida;
-    digitalWrite(ledPin, estadoLuz ? HIGH : LOW);
+    digitalWrite(ledPin, estadoLuz ? LOW : HIGH);
     
     Serial.print("⚡ CAMBIO DE ESTADO - ");
     Serial.print(horas);
@@ -255,8 +256,8 @@ void setup() {
   // Configurar pines
   pinMode(ledPin, OUTPUT);
   pinMode(ledPin7, OUTPUT);
-  digitalWrite(ledPin, LOW);
-  digitalWrite(ledPin7, LOW);
+  digitalWrite(ledPin, HIGH);
+  digitalWrite(ledPin7, HIGH);
   
   tiempoInicio = millis();
   ultimoChequeo = millis();
