@@ -1,4 +1,3 @@
-//ES CON EL PIN 0 Y LA LOGICA ESTA INVERTIDA EN EL MODULO
 #include <DNSServer.h>
 #include <ESP8266WebServer.h>
 #include <WiFiManager.h>
@@ -214,32 +213,49 @@ void actualizarEstadoLuz() {
   int horas = segundosDia / 3600;
   int minutos = (segundosDia % 3600) / 60;
   
-  // Calcular si debe estar encendido usando horarios configurables
-  bool debeEstarEncendida = false;
-  
   // Convertir horario actual a minutos desde medianoche
   int minutosActuales = horas * 60 + minutos;
   int minutosEncendido = config.horaEncendido * 60 + config.minutoEncendido;
   int minutosApagado = config.horaApagado * 60 + config.minutoApagado;
   
+  bool debeEstarEncendida;
+  
   if (minutosEncendido < minutosApagado) {
-    // Horario normal (ej: 18:40 a 06:40)
-    debeEstarEncendida = (minutosActuales >= minutosEncendido || minutosActuales < minutosApagado);
+    // Horario NORMAL (NO cruza medianoche)
+    // Ej: 16:40 a 16:42
+    debeEstarEncendida = (minutosActuales >= minutosEncendido && minutosActuales < minutosApagado);
   } else {
-    // Horario que cruza medianoche
+    // Horario que CRUZA medianoche
+    // Ej: 18:40 a 06:40
     debeEstarEncendida = (minutosActuales >= minutosEncendido || minutosActuales < minutosApagado);
   }
   
+  // Mostrar información en Serial
+  Serial.print("🕒 Hora: ");
+  Serial.print(horas);
+  Serial.print(":");
+  Serial.print(minutos < 10 ? "0" : "");
+  Serial.print(minutos);
+  Serial.print(" | Encendido: ");
+  Serial.print(minutosEncendido);
+  Serial.print(" | Apagado: ");
+  Serial.print(minutosApagado);
+  Serial.print(" | Debe encender: ");
+  Serial.println(debeEstarEncendida ? "SI" : "NO");
+  
   if (debeEstarEncendida != estadoLuz) {
     estadoLuz = debeEstarEncendida;
+    
+    // Lógica invertida: LOW enciende, HIGH apaga
     digitalWrite(ledPin, estadoLuz ? LOW : HIGH);
     
     Serial.print("⚡ CAMBIO DE ESTADO - ");
     Serial.print(horas);
     Serial.print(":");
+    Serial.print(minutos < 10 ? "0" : "");
     Serial.print(minutos);
-    Serial.print(" - Luz: ");
-    Serial.println(estadoLuz ? "ENCENDIDA" : "APAGADA");
+    Serial.print(" - Relé: ");
+    Serial.println(estadoLuz ? "ENCENDIDO (LOW)" : "APAGADO (HIGH)");
   }
 }
 
